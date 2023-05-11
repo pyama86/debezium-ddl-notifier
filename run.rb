@@ -36,8 +36,8 @@ subscriber = sub.listen do |received_message|
         }
       ]
     )
+    received_message.acknowledge!
   end
-  received_message.acknowledge!
 end
 
 subscriber.on_error do |exception|
