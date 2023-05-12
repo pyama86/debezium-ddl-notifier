@@ -2,6 +2,16 @@ require 'google/cloud/pubsub'
 require 'json'
 require 'slack-ruby-client'
 
+Thread.new do
+  server = TCPServer.new('0.0.0.0', 1234)
+  loop do
+    sock = server.accept
+    line = sock.gets
+    sock.write("HTTP/1.0 200 OK\n\nok")
+    sock.close
+  end
+end
+
 Slack.configure do |config|
   config.token = ENV['SLACK_API_TOKEN']
 end
