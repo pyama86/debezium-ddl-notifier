@@ -1,6 +1,12 @@
 require 'google/cloud/pubsub'
 require 'json'
 require 'slack-ruby-client'
+require 'sentry-ruby'
+if ENV['SENTRY_DSN']
+  Sentry.init do |config|
+    config.dsn = ENV['SENTRY_DSN']
+  end
+end
 
 Thread.new do
   server = TCPServer.new('0.0.0.0', 1234)
@@ -27,7 +33,7 @@ subscriber = sub.listen do |received_message|
 
   if j['payload']['ddl']
     client.chat_postMessage(
-      channel: "##{ENV['SLACK_CHANNEL']}",
+      channel: '#' + ENV['SLACK_CHANNEL'],
       blocks: [
         {
           "type": 'header',
@@ -48,6 +54,8 @@ subscriber = sub.listen do |received_message|
     )
     received_message.acknowledge!
   end
+rescue StandardError => e
+  Sentry.capture_exception(e)
 end
 
 subscriber.on_error do |exception|
